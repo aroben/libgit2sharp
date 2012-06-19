@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using System.Globalization;
+using LibGit2Sharp.Core;
 
 namespace LibGit2Sharp
 {
@@ -42,11 +44,25 @@ namespace LibGit2Sharp
     [Serializable]
     public class LibGit2SharpException : Exception
     {
+        readonly GitErrorCode code;
+        readonly GitErrorCategory category;
+        readonly bool isLibraryError;
+
         /// <summary>
         ///   Initializes a new instance of the <see cref = "LibGit2SharpException" /> class.
         /// </summary>
         public LibGit2SharpException()
         {
+        }
+
+        /// <summary>
+        ///   Initializes a new instance of the <see cref = "LibGit2SharpException" /> class.
+        /// </summary>
+        public LibGit2SharpException(GitErrorCode code, GitErrorCategory category, string message) : base(message)
+        {
+            Data["libgit2.code"] = this.code =  code;
+            Data["libgit2.class"] = this.category = category;
+            isLibraryError = true;
         }
 
         /// <summary>
@@ -76,6 +92,17 @@ namespace LibGit2Sharp
         protected LibGit2SharpException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+        }
+
+        public override string ToString()
+        {
+            return isLibraryError
+                ? String.Format(CultureInfo.InvariantCulture, "An error was raised by libgit2. Class = {0} ({1}).{2}{3}",
+                    category,
+                    code,
+                    Environment.NewLine,
+                    Message)
+                : base.ToString();
         }
     }
 }
