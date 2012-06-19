@@ -98,7 +98,6 @@ namespace LibGit2Sharp.Tests
             {
                 Assert.Throws<LibGit2SharpException>(() => repo.Commits.QueryBy(new Filter { Since = Constants.UnknownSha }).Count());
                 Assert.Throws<LibGit2SharpException>(() => repo.Commits.QueryBy(new Filter { Since = "refs/heads/deadbeef" }).Count());
-                Assert.Throws<ArgumentNullException>(() => repo.Commits.QueryBy(new Filter { Since = null }).Count());
             }
         }
 
@@ -120,8 +119,6 @@ namespace LibGit2Sharp.Tests
         {
             using (var repo = new Repository(BareTestRepoPath))
             {
-                Assert.Throws<ArgumentException>(() => repo.Commits.QueryBy(new Filter { Since = string.Empty }));
-                Assert.Throws<ArgumentNullException>(() => repo.Commits.QueryBy(new Filter { Since = null }));
                 Assert.Throws<ArgumentNullException>(() => repo.Commits.QueryBy(null));
             }
         }
@@ -286,6 +283,28 @@ namespace LibGit2Sharp.Tests
                         "4c062a6", "e90810b", "6dcf9bf", "a4a7dce",
                         "be3563a", "c47800c", "9fd738e", "4a202b3",
                         "5b5b025", "8496071",
+                    });
+        }
+
+        [Fact]
+        public void CanEnumerateCommitsUsingGlob()
+        {
+            AssertEnumerationOfCommits(
+                repo => new Filter { SinceGlob = "heads" },
+                new[]
+                    {
+                        "4c062a6", "e90810b", "6dcf9bf", "a4a7dce", "be3563a", "c47800c", "9fd738e", "4a202b3", "41bc8c6", "5001298", "5b5b025", "8496071"
+                    });
+        }
+
+        [Fact]
+        public void CanHideCommitsUsingGlob()
+        {
+            AssertEnumerationOfCommits(
+                repo => new Filter { Since = "refs/heads/packed-test", UntilGlob = "packed" },
+                new[]
+                    {
+                        "4a202b3", "5b5b025", "8496071"
                     });
         }
 
